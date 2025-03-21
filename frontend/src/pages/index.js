@@ -1,4 +1,5 @@
 import { useQuery, gql } from '@apollo/client';
+import ProtectedRoute from '../components/ProtectedRoute';
 
 const GET_DATA = gql`
   query GetData {
@@ -17,6 +18,7 @@ export default function Home() {
   if (error) return <p>Error: {error.message}</p>;
 
   return (
+    <ProtectedRoute>
     <div>
       <h1>GraphQL Data</h1>
       {data.getUsers.map((user) => (
@@ -26,5 +28,7 @@ export default function Home() {
         </div>
       ))}
     </div>
+    </ProtectedRoute>
   );
+  
 }

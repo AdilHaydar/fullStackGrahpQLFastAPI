@@ -1,9 +1,11 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, UploadFile, File
 from strawberry.fastapi import GraphQLRouter
 import strawberry
 from fastapi.middleware.cors import CORSMiddleware
-from .database import Base, init_db
+from .database import init_db
 from .schema import Query, Mutation
+import shutil
+import os
 
 
 origins = [
@@ -13,21 +15,6 @@ origins = [
 ]
 
 
-
-
-# @strawberry.type
-# class User:
-#     id: int
-#     name: str
-
-# @strawberry.type
-# class Query:
-#     @strawberry.field
-#     def users(self) -> list[User]:
-#         return [
-#             User(id=1, name="Ali"),
-#             User(id=2, name="Veli"),
-#         ]
 
 schema = strawberry.federation.Schema(query=Query, mutation=Mutation)
 graphql_app = GraphQLRouter(schema)
