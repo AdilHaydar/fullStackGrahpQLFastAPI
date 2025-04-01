@@ -12,10 +12,14 @@ const LOGIN_USER = gql`
     }
 `;
 
+const REGISTER_USER = gql`mutation RegisterUser($username: String!, $email: String!, $password: String!, $fullName: String!) {registerUser(username: $username, email: $email, password: $password, fullName: $fullName)}`
+
+
 export const AuthProvider = ({ children }) => {
     const [user, setUser] = useState(null)
     const [error, setError] = useState(null)
     const [loginUser] = useMutation(LOGIN_USER)
+    const [registerUser] = useMutation(REGISTER_USER)
     const router = useRouter()
 
     // ✅ Sayfa yüklendiğinde localStorage’dan kullanıcıyı al
@@ -45,6 +49,27 @@ export const AuthProvider = ({ children }) => {
         }
     }
 
+    const register = async (username, email, password, fullName) => {
+        try {
+            const { data } = await registerUser({
+                variables: {
+                    username,
+                    email,
+                    password,
+                    fullName
+                }
+            })
+            console.log("Data", data)
+
+            localStorage.setItem("token", data.registerUser)
+            setUser(data.registerUser)
+            router.push("/")
+        } catch (error) {
+            console.log("Register Failed", error)
+            setError(error)
+        }
+    }
+
     const logout = () => {
         localStorage.removeItem("token")
         setUser(null)
@@ -52,7 +77,7 @@ export const AuthProvider = ({ children }) => {
     }
 
     return (
-        <AuthContext.Provider value={{ user, error, login, logout }}>
+        <AuthContext.Provider value={{ user, error, login, logout, register }}>
             {children}
         </AuthContext.Provider>
     )

@@ -1,4 +1,4 @@
-from fastapi import FastAPI, UploadFile, File
+from fastapi import FastAPI
 from strawberry.fastapi import GraphQLRouter
 import strawberry
 from fastapi.middleware.cors import CORSMiddleware
@@ -16,7 +16,7 @@ origins = [
 
 
 
-schema = strawberry.federation.Schema(query=Query, mutation=Mutation)
+schema = strawberry.Schema(query=Query, mutation=Mutation)
 graphql_app = GraphQLRouter(schema)
 
 init_db()

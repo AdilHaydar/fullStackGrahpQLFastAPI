@@ -33,7 +33,7 @@ class MoviesAndSeries(Base):
     
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey('users.id'), nullable=False)
-    title = Column(String, unique=True, index=True)
+    title = Column(String, index=True)
     year = Column(Integer)
     type = Column(String)
     genre = Column(String)

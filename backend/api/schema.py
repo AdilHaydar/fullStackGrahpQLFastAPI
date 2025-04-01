@@ -5,7 +5,7 @@ from typing import List, Optional
 from .models import User, MoviesAndSeries, Comment
 from .database import AsyncSessionLocal
 from sqlalchemy.future import select
-from passlib.context import CryptContext
+from sqlalchemy.orm import joinedload
 from .auth import create_access_token, verify_access_token
 import base64
 import os
@@ -50,6 +50,7 @@ class MoviesAndSeriesInputType:
     description: Optional[str] = None
     poster_base64: Optional[str] = None
     rating: Optional[int] = None
+
     
 @strawberry.type
 class CommentType:
@@ -73,7 +74,8 @@ class Query:
         async with AsyncSessionLocal() as session:
             result = await session.execute(select(User))
             rows = result.scalars().all()
-            return [UserType(id=row.id, username=row.username, email=row.email, full_name=row.full_name) for row in rows]
+            # return [UserType(id=row.id, username=row.username, email=row.email, full_name=row.full_name) for row in rows]
+            return rows
         
     @strawberry.field
     async def get_user(self, id: int) -> UserType:
@@ -84,6 +86,12 @@ class Query:
                 raise ValueError("User not found")
             return user
         
+    @strawberry.field
+    async def get_user_by_token(self, token: str) -> UserType | None:
+        data = verify_access_token(token)
+        print("DATA:::", data)
+        return data
+
     @strawberry.field
     async def get_movies(self) -> List[MoviesAndSeriesType]:
         async with AsyncSessionLocal() as session:
@@ -113,13 +121,13 @@ class Query:
 class Mutation:
         
     @strawberry.field
-    async def register_user(self, username:str, email: str, password: str, full_name: str) -> UserType:
+    async def register_user(self, username:str, email: str, password: str, full_name: str) -> str:
         async with AsyncSessionLocal() as session:
             new_user = User(username=username, email=email, full_name=full_name)
             new_user.set_password(password)
             session.add(new_user)
             await session.commit()
-            return new_user
+            return create_access_token({"sub": new_user.username, "id": new_user.id})
         
     @strawberry.field
     async def login_user(self, username: str, password: str) -> str:
@@ -143,10 +151,13 @@ class Mutation:
     async def create_movie(self, movie_data: MoviesAndSeriesInputType) -> MoviesAndSeriesType:
         async with AsyncSessionLocal() as session:
             movie_data = movie_data.__dict__
-            if movie_data.poster_base64:
+            if movie_data.get("poster_base64"):
                 try:    
                     img_data = base64.b64decode(movie_data.pop("poster_base64"))
-                    file_path = f"uploads/posters/{movie_data.user_id}/{movie_data.title}.jpg"
+                    file_name = f"{movie_data.get("title")}.jpg"
+                    directory = f"uploads/posters/{movie_data.get("user_id")}"
+                    os.makedirs(directory, exist_ok=True)
+                    file_path = os.path.join(directory, file_name)
                     with open(file_path, "wb") as f:
                         f.write(img_data)
                     movie_data["poster"] = file_path
@@ -154,12 +165,19 @@ class Mutation:
                     raise HTTPException(status_code=400, detail=str(e))
             else:
                 file_path = None
-            new_movie = MoviesAndSeries(**movie_data.__dict__)
+            new_movie = MoviesAndSeries(**movie_data)
             session.add(new_movie)
             await session.commit()
+            
+            result = await session.execute(
+            select(MoviesAndSeries)
+            .options(joinedload(MoviesAndSeries.user))
+            .filter(MoviesAndSeries.id == new_movie.id)
+            )
+            new_movie = result.scalars().first()
             return new_movie
-        
-        
+
+
     @strawberry.field
     async def create_comment(self, comment_data: CommentInputType) -> CommentType:
         async with AsyncSessionLocal() as session:

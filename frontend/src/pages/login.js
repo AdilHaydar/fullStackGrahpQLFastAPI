@@ -4,12 +4,16 @@ import AuthContext from "../context/AuthContext"
 // import axios from "axios"
 
 const Login = () => {
-    const { login } = useContext(AuthContext)
+    const { login, register } = useContext(AuthContext)
     const [username, setUsername] = useState("")
     const [password, setPassword] = useState("")
     const [error, setError] = useState("")
+    const [passwordError, setPasswordError] = useState("")
     const [registerUsername, setRegisterUsername] = useState("")
     const [registerPassword, setRegisterPassword] = useState("")
+    const [registerFullName, setRegisterFullName] = useState("")
+    const [registerEmail, setRegisterEmail] = useState("")
+    const [registerPasswordConfirm, setRegisterPasswordConfirm] = useState("")
 
     const handleSubmit = async (e) => {
         e.preventDefault()
@@ -18,21 +22,27 @@ const Login = () => {
 
     const handleRegister = async (e) => {
         e.preventDefault()
-        try {
-            const response = await axios.post("http://localhost:8000/auth", {
-                username: registerUsername,
-                password: registerPassword,
-            })
-            if (response.status === 201) {
-                login(registerUsername, registerPassword)
-            } else {
-                setError("Failed to register")
-                console.log("Failed to register:", response)
-            }
-        } catch (error) {
-            console.error("Failed to register:", error)
-            setError("Failed to register")
+        // try {
+        //     const response = await axios.post("http://localhost:8000/auth", {
+        //         username: registerUsername,
+        //         password: registerPassword,
+        //     })
+        //     if (response.status === 201) {
+        //         login(registerUsername, registerPassword)
+        //     } else {
+        //         setError("Failed to register")
+        //         console.log("Failed to register:", response)
+        //     }
+        // } catch (error) {
+        //     console.error("Failed to register:", error)
+        //     setError("Failed to register")
+        // }
+
+        if (registerPassword !== registerPasswordConfirm) {
+            setPasswordError("Passwords do not match")
+            return
         }
+        register(registerUsername, registerEmail, registerPassword, registerFullName)
     }
 
     return (
@@ -86,6 +96,40 @@ const Login = () => {
                         placeholder="Password"
                         value={registerPassword}
                         onChange={(e) => setRegisterPassword(e.target.value)}
+                    />
+                </div>
+                <div className="mb-3">
+                    <label htmlFor="registerPasswordConfirm" className="form-label">Password Confirm</label>
+                    <input
+                        type="password"
+                        className="form-control"
+                        id="registerPasswordConfirm"
+                        placeholder="Password Confirm"
+                        value={registerPasswordConfirm}
+                        onChange={(e) => setRegisterPasswordConfirm(e.target.value)}
+                    />
+                    {passwordError && <div>{passwordError}</div>}
+                </div>
+                <div className="mb-3">
+                    <label htmlFor="registerEmail" className="form-label">Email</label>
+                    <input
+                        type="email"
+                        className="form-control"
+                        id="registerEmail"
+                        placeholder="example@mail.com"
+                        value={registerEmail}
+                        onChange={(e) => setRegisterEmail(e.target.value)}
+                    />
+                </div>
+                <div className="mb-3">
+                    <label htmlFor="registerFullName" className="form-label">registerFullName</label>
+                    <input
+                        type="text"
+                        className="form-control"
+                        id="registerFullName"
+                        placeholder="John Doe"
+                        value={registerFullName}
+                        onChange={(e) => setRegisterFullName(e.target.value)}
                     />
                 </div>
                 <button type="submit" className="btn btn-primary">Register</button>
