@@ -22,6 +22,17 @@ class UserType:
     movies: List["MoviesAndSeriesType"]
     comments: List["CommentType"]
     
+@strawberry.type
+class TokenType:
+    sub: str
+    id: int
+    exp: int
+    
+@strawberry.type
+class LoginType:
+    token: str
+    id: int
+    
 @strawberry.input
 class UserInputType:
     username: str
@@ -87,10 +98,14 @@ class Query:
             return user
         
     @strawberry.field
-    async def get_user_by_token(self, token: str) -> UserType | None:
+    async def get_user_by_token(self, token: str) -> TokenType | None:
+        print("TOKEN:::", token)
         data = verify_access_token(token)
-        print("DATA:::", data)
-        return data
+        if data is None:
+            return None
+        result = TokenType(sub=data.get("sub"), id=data.get("id"), exp=data.get("exp"))
+        print("DATA:::", result)
+        return result
 
     @strawberry.field
     async def get_movies(self) -> List[MoviesAndSeriesType]:
@@ -121,22 +136,24 @@ class Query:
 class Mutation:
         
     @strawberry.field
-    async def register_user(self, username:str, email: str, password: str, full_name: str) -> str:
+    async def register_user(self, username:str, email: str, password: str, full_name: str) -> LoginType:
         async with AsyncSessionLocal() as session:
             new_user = User(username=username, email=email, full_name=full_name)
             new_user.set_password(password)
             session.add(new_user)
             await session.commit()
-            return create_access_token({"sub": new_user.username, "id": new_user.id})
+            token = create_access_token({"sub": new_user.username, "id": new_user.id})
+            return LoginType(token=token, id=new_user.id)
         
     @strawberry.field
-    async def login_user(self, username: str, password: str) -> str:
+    async def login_user(self, username: str, password: str) -> LoginType:
         async with AsyncSessionLocal() as session:
             result = await session.execute(select(User).where(User.username == username))
             user = result.scalars().first()
             if user is None or not user.verify_password(password):
                 raise ValueError("Invalid username or password")
-            return create_access_token({"sub": user.username, "id": user.id})
+            token = create_access_token({"sub": user.username, "id": user.id})
+            return LoginType(token=token, id=user.id)
 
     # @strawberry.field
     # async def get_user_info(self, id: int) -> UserType:

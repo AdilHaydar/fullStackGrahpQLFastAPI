@@ -12,37 +12,11 @@ const GET_DATA = gql`
     }
   }
 `;
-const GET_USER_DATA = gql`
-  query GetUserByToken ($token: String!) {
-    getUserByToken(token: $token) {
-      id
-      username
-    }
-  }
-  `;
+
 export default function Home() {
   const { loading, error, data } = useQuery(GET_DATA);
-  const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
-  const { userLoading, userError, userData } = useQuery(GET_USER_DATA, {
-    variables: { token },
-    skip: !token, // Eğer token yoksa sorguyu çalıştırma
-  });
-  const router = useRouter()
 
-  useEffect(() => {
-    console.log("USER DATA:::", userData)
-    if (!token || !userData) {
-      localStorage.removeItem("token");
-      router.push("/login");
-    }
-  }, [token]);
-
-  if (loading || userLoading) return <p>Loading...</p>;
-  if (error || userError) {
-    localStorage.removeItem("token");
-    router.push("/login");
-    return null;
-  }
+  if (loading) return <p>Loading...</p>;
 
 
   return (
