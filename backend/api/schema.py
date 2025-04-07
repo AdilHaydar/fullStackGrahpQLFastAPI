@@ -9,7 +9,9 @@ from sqlalchemy.orm import joinedload
 from .auth import create_access_token, verify_access_token
 import base64
 import os
+import asyncio
 from fastapi import HTTPException
+from .elastic_search import index_movie, get_movies
 
 
 # Kullanıcı tipini tanımlıyoruz
@@ -109,10 +111,12 @@ class Query:
 
     @strawberry.field
     async def get_movies(self) -> List[MoviesAndSeriesType]:
-        async with AsyncSessionLocal() as session:
-            result = await session.execute(select(MoviesAndSeries))
-            rows = result.scalars().all()
-            return rows
+        # async with AsyncSessionLocal() as session:
+        #     result = await session.execute(select(MoviesAndSeries))
+        #     rows = result.scalars().all()
+        #     return rows
+        movies = await get_movies()
+        return movies
         
     @strawberry.field
     async def get_movie(self, id: int) -> MoviesAndSeriesType:
@@ -192,6 +196,8 @@ class Mutation:
             .filter(MoviesAndSeries.id == new_movie.id)
             )
             new_movie = result.scalars().first()
+
+            asyncio.create_task(index_movie(new_movie.to_dict()))  
             return new_movie
 
 

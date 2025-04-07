@@ -8,7 +8,10 @@ const AuthContext = createContext()
 
 const LOGIN_USER = gql`
     mutation GetData($username: String!, $password: String!) {
-        loginUser(username: $username, password: $password)
+        loginUser(username: $username, password: $password){
+        id,
+        token
+        }
     }
 `;
 
@@ -61,7 +64,7 @@ export const AuthProvider = ({ children }) => {
             })
 
             localStorage.setItem("token", data.loginUser.token)
-            localStorage.setItem("userId", data.loginUser.userId)
+            localStorage.setItem("userId", data.loginUser.id)
             setUser(data.loginUser.token)
             router.push("/")
         } catch (error) {
@@ -83,7 +86,7 @@ export const AuthProvider = ({ children }) => {
             console.log("Data", data)
 
             localStorage.setItem("token", data.registerUser.token)
-            localStorage.setItem("userId", data.registerUser.userId)
+            localStorage.setItem("userId", data.registerUser.id)
             setUser(data.registerUser)
             router.push("/")
         } catch (error) {

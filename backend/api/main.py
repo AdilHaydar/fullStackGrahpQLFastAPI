@@ -4,8 +4,9 @@ import strawberry
 from fastapi.middleware.cors import CORSMiddleware
 from .database import init_db
 from .schema import Query, Mutation
-import shutil
-import os
+from contextlib import asynccontextmanager
+from .elastic_search import es
+
 
 
 origins = [
@@ -21,7 +22,19 @@ graphql_app = GraphQLRouter(schema)
 
 init_db()
 
-app = FastAPI()
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    if not es.indices.exists(index="movies"):
+        es.indices.create(index="movies")
+        print("Index created")
+    else:
+        print("Index already exists")
+    
+    yield
+    
+    print("Shutting down...")
+
+app = FastAPI(lifespan=lifespan)
 app.include_router(graphql_app, prefix="/graphql")
 
 app.add_middleware(
@@ -31,6 +44,16 @@ app.add_middleware(
     allow_methods=["*"],  # Tüm yöntemlere izin ver
     allow_headers=["*"],  # Tüm header'lara izin ver
 )
+
+@app.on_event("startup")
+def create_index():
+    if not es.indices.exists(index="movies"):
+        es.indices.create(index="movies")
+        print("Index created")
+    else:
+        print("Index already exists")
+
 @app.get("/")
 def home():
     return {"message": "GraphQL API çalışıyor"}
+

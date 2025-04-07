@@ -12,6 +12,15 @@ const POST_DATA = gql`
             createMovie(movieData: $movieData) {
                 id
                 title
+                description
+                year
+                rating
+                genre
+                poster
+                user {
+                    id
+                    username
+                }
             }
         }
         `;
@@ -20,44 +29,34 @@ const CreateModal = ({ showModal, handleCloseModal }) => {
     // const [isInvalidRating, setIsInvalidRating] = useState(false)
     const [rating, setRating] = useState(0)
     const [title, setTitle] = useState("")
-    const [isInvalidYear, setIsInvalidYear] = useState(false)
     const [description, setDescription] = useState("")
-    const [year, setYear] = useState("")
+    const [year, setYear] = useState(0)
     const [genre, setGenre] = useState("")
     const [posterBase64, setPosterBase64] = useState(null)
     const [postMovie] = useMutation(POST_DATA)
 
-    const testMethod = (base64) => {
-        setPosterBase64(base64)
-        console.log(base64)
-    }
-    const handleSubmitButton = () => {
-
+    const handleSubmitButton = async () => {
+        const userId = localStorage.getItem("userId")
         try{
-            const { data } = postMovie({
+            const { data } = await postMovie({
                 variables: {
                     movieData: {
                         title,
                         description,
-                        year,
+                        year: parseInt(year),
                         rating,
                         genre,
                         posterBase64,
-                        userId
+                        userId: parseInt(userId)
                     }
                 }
             })
+            console.log("Movie created:", data.createMovie)
         } catch (error) {
             console.error("Error creating movie:", error)
             return
         }
         
-        
-        console.log(year)
-        console.log(title)
-        console.log(description)
-        console.log(rating)
-        console.log(isInvalidYear)
         handleCloseModal()
     }
 
@@ -93,7 +92,7 @@ const CreateModal = ({ showModal, handleCloseModal }) => {
                     </div>
                     <div className="modal-body">
                         <label>Upload Poster</label>
-                        <FileUploader onFileChange={testMethod} />
+                        <FileUploader onFileChange={setPosterBase64} />
                         <img src={`data:image/png;base64,${posterBase64}`} alt="Preview" className="img-fluid mt-2" style={{ maxWidth: "100%", maxHeight: "200px" }} />
                     </div>
                     <div className="modal-footer">

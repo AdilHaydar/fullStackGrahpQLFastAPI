@@ -21,28 +21,7 @@ export default function Home() {
 
   return (
     <ProtectedRoute>
-    <div className="row">
-      <div className="col-md-4"></div>
-      <div className="col-md-4">
-        <div className="form-group text-center">
-          <label>Title</label>
-          <input type="text" className="form-control" placeholder="Title"/>
-        </div>
-        <div className="form-group text-center">
-          <label>Description</label>
-          <textarea className="form-control"></textarea>
-        </div>
-        <div className="form-group text-center">
-          <label>Year</label>
-          <input type="number" className="form-control" placeholder="Year"/>
-        </div>
-        <div className="form-group text-center">
-          <label>Rating</label>
-          <input type="number" className="form-control" placeholder="Rating"/>
-        </div>
-      </div>
-      <div className="col-md-4"></div>
-    </div>
+
     <div className="row">
       <div className="col-md-3">
         <h1>GraphQL Data</h1>

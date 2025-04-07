@@ -47,6 +47,22 @@ class MoviesAndSeries(Base):
     comments = relationship("Comment", back_populates="movie")
     
     
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "user_id": {"id": self.user.id, "username": self.user.username},
+            "title": self.title,
+            "year": self.year,
+            "type": self.type,
+            "genre": self.genre,
+            "description": self.description,
+            "poster": self.poster,
+            "rating": self.rating,
+            "created_at": self.created_at,
+            "updated_at": self.updated_at
+        }
+    
+    
 class Comment(Base):
     __tablename__ = 'comments'
     
