@@ -6,6 +6,7 @@ from .database import init_db
 from .schema import Query, Mutation
 from contextlib import asynccontextmanager
 from .elastic_search import es
+from fastapi.staticfiles import StaticFiles
 
 
 
@@ -35,6 +36,7 @@ async def lifespan(app: FastAPI):
     print("Shutting down...")
 
 app = FastAPI(lifespan=lifespan)
+app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 app.include_router(graphql_app, prefix="/graphql")
 
 app.add_middleware(

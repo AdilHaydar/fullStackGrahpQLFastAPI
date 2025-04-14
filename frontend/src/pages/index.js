@@ -4,11 +4,12 @@ import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 
 const GET_DATA = gql`
-  query GetData {
-    getUsers {
+  query GetMovies {
+    getMovies {
       id
-      username
-      fullName
+      title
+      shortDescription(words: 15)
+      poster
     }
   }
 `;
@@ -25,30 +26,23 @@ export default function Home() {
     <div className="row">
       <div className="col-md-3">
         <h1>GraphQL Data</h1>
-        {data.getUsers.map((user) => (
-          <div key={user.id}>
-            <h2>{user.fullName}</h2>
-            <p>{user.username}</p>
-          </div>
-        ))}
+        
+        <div>Left Page</div>
       </div>
       <div className="text-center col-md-6">
         <h1>GraphQL Data</h1>
-        {data.getUsers.map((user) => (
-          <div key={user.id}>
-            <h2>{user.fullName}</h2>
-            <p>{user.username}</p>
+        {data.getMovies.map((movie) => (
+          <div key={movie.id}>
+            <h2>{movie.title}</h2>
+            <img src={`http://localhost:8000/${movie.poster}`} alt={movie.title} height={'150px'} width={'150px'}/>
+            <p>{movie.shortDescription}</p>
           </div>
         ))}
       </div>
       <div className="col-md-3">
         <h1>GraphQL Data</h1>
-        {data.getUsers.map((user) => (
-          <div key={user.id}>
-            <h2>{user.fullName}</h2>
-            <p>{user.username}</p>
-          </div>
-        ))}
+        
+        <div>Right Page</div>
       </div>
     </div>
     

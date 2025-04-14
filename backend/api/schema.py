@@ -10,6 +10,7 @@ from .auth import create_access_token, verify_access_token
 import base64
 import os
 import asyncio
+from datetime import datetime
 from fastapi import HTTPException
 from .elastic_search import index_movie, get_movies
 
@@ -52,7 +53,15 @@ class MoviesAndSeriesType:
     poster: Optional[str]
     rating: Optional[int]
     user: UserType
-    comments: List["CommentType"]
+    # comments: Optional[List["CommentType"]]
+    created_at: str
+    updated_at: str
+    
+    @strawberry.field
+    def short_description(self, words: int = 20) -> Optional[str]:
+        if not self.description:
+            return None
+        return " ".join(self.description.split()[:words]) + "...devamı"
     
 @strawberry.input
 class MoviesAndSeriesInputType:
@@ -115,8 +124,15 @@ class Query:
         #     result = await session.execute(select(MoviesAndSeries))
         #     rows = result.scalars().all()
         #     return rows
+        
+        result_movies = []
         movies = await get_movies()
-        return movies
+        for movie in movies:
+            del movie['_source']['search_field']
+            del movie['_source']['detailed_search_field']
+            result_movies.append(MoviesAndSeriesType(**movie['_source']))
+        # movies = [MoviesAndSeriesType(**hit["_source"]) for hit in movies]
+        return result_movies
         
     @strawberry.field
     async def get_movie(self, id: int) -> MoviesAndSeriesType:
@@ -170,6 +186,7 @@ class Mutation:
         
     @strawberry.field
     async def create_movie(self, movie_data: MoviesAndSeriesInputType) -> MoviesAndSeriesType:
+        # TODO : Burada gelen userId değeriini UserType şeklinde es ye yaz.
         async with AsyncSessionLocal() as session:
             movie_data = movie_data.__dict__
             if movie_data.get("poster_base64"):

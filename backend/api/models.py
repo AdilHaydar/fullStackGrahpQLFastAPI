@@ -35,7 +35,6 @@ class MoviesAndSeries(Base):
     user_id = Column(Integer, ForeignKey('users.id'), nullable=False)
     title = Column(String, index=True)
     year = Column(Integer)
-    type = Column(String)
     genre = Column(String)
     description = Column(String)
     poster = Column(String)
@@ -53,7 +52,6 @@ class MoviesAndSeries(Base):
             "user_id": {"id": self.user.id, "username": self.user.username},
             "title": self.title,
             "year": self.year,
-            "type": self.type,
             "genre": self.genre,
             "description": self.description,
             "poster": self.poster,
