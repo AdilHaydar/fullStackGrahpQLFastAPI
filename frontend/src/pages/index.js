@@ -1,23 +1,35 @@
-import { useQuery, gql } from '@apollo/client';
+"use client"
+
+import { gql, useLazyQuery } from '@apollo/client';
 import ProtectedRoute from '../components/ProtectedRoute';
-import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
+
 
 const GET_DATA = gql`
-  query GetMovies {
-    getMovies {
-      id
-      title
-      shortDescription(words: 15)
-      poster
+query GetRelatedMovies($userId: Int!) {
+  getRelatedMovies(userId: $userId) {
+    id
+    title
+    shortDescription(words: 15)
+    poster
+    user {
+      username
     }
   }
-`;
+}`
 
 export default function Home() {
-  const { loading, error, data } = useQuery(GET_DATA);
+  const [getUserData, { loading, error, data }] = useLazyQuery(GET_DATA);
 
-  if (loading) return <p>Loading...</p>;
+  useEffect(() => {
+    const userId = parseInt(localStorage.getItem("userId"))
+    if (userId) {
+      getUserData({ variables: { userId: userId } });
+    }
+
+  }, []);
+
+  if (loading ||!data) return <p>Loading...</p>;
 
 
   return (
@@ -29,11 +41,23 @@ export default function Home() {
         
         <div>Left Page</div>
       </div>
-      <div className="text-center col-md-6">
-        <h1>GraphQL Data</h1>
-        {data.getMovies.map((movie) => (
+      <div className="text-center col-md-6 mb-5">
+        <h1>Anasayfa</h1>
+        <hr></hr>
+        {data?.getRelatedMovies.map((movie) => (
           <div key={movie.id}>
-            <h2>{movie.title}</h2>
+            <div className="d-flex justify-content-around">
+              <div>
+                <img height={'25px'} width={'25px'} />
+                <p>{movie.user.username}</p>
+              </div>
+              <h2>{movie.title}</h2>
+            </div>
+              
+            <div>            
+            
+            </div>
+            
             <img src={`http://localhost:8000/${movie.poster}`} alt={movie.title} height={'150px'} width={'150px'}/>
             <p>{movie.shortDescription}</p>
           </div>

@@ -12,7 +12,7 @@ import os
 import asyncio
 from datetime import datetime
 from fastapi import HTTPException
-from .elastic_search import index_movie, get_movies
+from .elastic_search import index_movie, get_movies, get_related_movies_by_user
 
 
 # Kullanıcı tipini tanımlıyoruz
@@ -20,10 +20,10 @@ from .elastic_search import index_movie, get_movies
 class UserType:
     id: int
     username: str
-    email: str
-    full_name: str
-    movies: List["MoviesAndSeriesType"]
-    comments: List["CommentType"]
+    email: Optional[str] = None
+    full_name: Optional[str] = None
+    movies: Optional[List["MoviesAndSeriesType"]] = None
+    comments: Optional[List["CommentType"]] = None
     
 @strawberry.type
 class TokenType:
@@ -130,8 +130,27 @@ class Query:
         for movie in movies:
             del movie['_source']['search_field']
             del movie['_source']['detailed_search_field']
+            del movie['_source']['vector_embedding']
+            user_data = movie['_source']["user"]
+            movie['_source']["user"] = UserType(**user_data)
             result_movies.append(MoviesAndSeriesType(**movie['_source']))
+           
         # movies = [MoviesAndSeriesType(**hit["_source"]) for hit in movies]
+        print("RESULT MOVIES:::", result_movies)
+        return result_movies
+    
+    @strawberry.field
+    async def get_related_movies(self, user_id: int) -> List[MoviesAndSeriesType]:
+        result_movies = []
+        movies = await get_related_movies_by_user(user_id)
+        for movie in movies:
+            del movie['_source']['search_field']
+            del movie['_source']['detailed_search_field']
+            del movie['_source']['vector_embedding']
+            user_data = movie['_source']["user"]
+            movie['_source']["user"] = UserType(**user_data)
+            result_movies.append(MoviesAndSeriesType(**movie['_source']))
+        
         return result_movies
         
     @strawberry.field

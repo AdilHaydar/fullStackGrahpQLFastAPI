@@ -15,7 +15,7 @@ const LOGIN_USER = gql`
     }
 `;
 
-const REGISTER_USER = gql`mutation RegisterUser($username: String!, $email: String!, $password: String!, $fullName: String!) {registerUser(username: $username, email: $email, password: $password, fullName: $fullName)}`
+const REGISTER_USER = gql`mutation registerUser($username: String!, $email: String!, $password: String!, $fullName: String!) {registerUser(username: $username, email: $email, password: $password, fullName: $fullName){token,id}}`
 
 const GET_USER_DATA = gql`
     query GetUserByToken ($token: String!) {
