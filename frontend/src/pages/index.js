@@ -3,7 +3,8 @@
 import { gql, useLazyQuery } from '@apollo/client';
 import ProtectedRoute from '../components/ProtectedRoute';
 import { useEffect, useState } from 'react';
-
+import styles from '../styles/MenuItem.module.css'
+import LeftMenuItem from '../components/LeftMenuItem';
 
 const GET_DATA = gql`
 query GetRelatedMovies($userId: Int!) {
@@ -39,7 +40,11 @@ export default function Home() {
       <div className="col-md-3">
         <h1>GraphQL Data</h1>
         
-        <div>Left Page</div>
+        <div>
+          <LeftMenuItem cssClass={styles.leftMenuItem} icon="bi bi-house-door-fill" route="/"  name="Anasayfa"/>
+          <LeftMenuItem cssClass={styles.leftMenuItem} icon="bi bi-house-door-fill" route="/profile"  name="Profil"/>
+          <LeftMenuItem cssClass={styles.leftMenuItem} icon="bi bi-house-door-fill" route="/settings"  name="Ayarlar"/>
+        </div>
       </div>
       <div className="text-center col-md-6 mb-5">
         <h1>Anasayfa</h1>

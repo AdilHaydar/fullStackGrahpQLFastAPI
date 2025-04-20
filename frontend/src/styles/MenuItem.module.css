@@ -1,0 +1,15 @@
+.leftMenuItem {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    font-size: 24px;
+    border-radius: 7px;
+    padding-left: 5px;
+}
+
+
+.leftMenuItem:hover {
+    transition: background-color 0.1s ease-in-out;
+    background-color: #2b6eff;
+    cursor: pointer;
+}

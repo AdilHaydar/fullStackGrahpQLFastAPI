@@ -68,7 +68,7 @@ const CreateModal = ({ showModal, handleCloseModal }) => {
                 <div className="bg-dark modal-content">
                     <div className="modal-header">
                         <h5 className="modal-title">Create Movie/Series Review</h5>
-                        <button type="button" className="btn-close" onClick={handleCloseModal}></button>
+                        <button type="button" className="btn-close btn-close-white" onClick={handleCloseModal}></button>
                     </div>
                     <div className="modal-body">
                         <label>Title</label>
